@@ -13,7 +13,7 @@ authors = [
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.9"
-keywords = ["scattering covariance", "scattering transform", "healpy", "gradient descent", "microcanonical", "wavelet", "HealpixML", "Healpix"]
+keywords = ["scattering covariance", "scattering transform", "healpy", "gradient descent", "microcanonical", "wavelet", "HealpixML", "Healpix", "generative models"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
