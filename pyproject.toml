@@ -7,7 +7,7 @@ name = "CMBSCAT"
 version = "0.1.0"
 description = "A package for scattering covariance synthesis on a dataset of Healpix Q,U polarization input maps based on the HealpixML package."
 authors = [
-  { name="Paolo Campeti", email="paolo.campeti@fe.infn.it" },
+  { name="Paolo CAMPETI", email="paolo.campeti@fe.infn.it" },
   { name = "Jean-Marc DELOUIS", email = "jean.marc.delouis@ifremer.fr" },
 ]
 readme = "README.md"
