@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CMBSCAT"             
+version = "0.1.0"
+description = "A package for scattering covariance synthesis on a dataset of Healpix Q,U polarization input maps"
+authors = [
+  { name="Paolo Campeti", email="paolo.campeti@fe.infn.it" }
+]
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.9"
+keywords = ["scattering covariance", "scattering transform", "healpy", "gradient descent", "microcanonical", "wavelet", "HealpixML", "Healpix"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "healpy",
+  "tensorflow",
+  "foscat" 
+]
+
