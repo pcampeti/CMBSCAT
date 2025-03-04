@@ -1,3 +1,3 @@
-from .CMBSCAT_class import CMBSCAT
+from .cmbscat_class import cmbscat
 
-__all__ = ["CMBSCAT"]
+__all__ = ["cmbscat"]
