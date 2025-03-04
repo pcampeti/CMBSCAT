@@ -6,7 +6,7 @@ import tensorflow as tf
 import foscat.alm as foscat_alm
 import foscat.Synthesis as synthe
 
-class CMBSCAT:
+class cmbscat:
     """
     Performs scattering covariance synthesis on a dataset of Q,U polarization input maps.
     Note that by default it assumes the single-target approach (see Campeti et al. 2025). 
@@ -16,7 +16,7 @@ class CMBSCAT:
 
     def __init__(self, params):
         """
-        Initialize the CMBSCAT with a dictionary of parameters.
+        Initialize cmbscat with a dictionary of parameters.
         
         Args:
             params (dict): Dictionary containing the parameters needed for the script.
