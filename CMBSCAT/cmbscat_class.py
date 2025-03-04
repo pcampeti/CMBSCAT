@@ -9,9 +9,9 @@ import foscat.Synthesis as synthe
 class cmbscat:
     """
     Performs scattering covariance synthesis on a dataset of Q,U polarization input maps.
-    Note that by default it assumes the single-target approach (see Campeti et al. 2025). 
-    This means the synthesis should be repeated running this script for every target in the input dataset. Then  
-    then targets should be uniformly sampled with replacement from the input dataset, and, for each sampled target, a synthesized map should be selected from the corresponding batch. If the same target is sampled more than once, you should ensure that each time a different syntehsized map is selected from the same batch.
+    Note that by default it assumes the single-target approach (see Campeti et al. 2025): 
+    synthesis should be repeated running this script for every target in the input dataset. 
+    Then targets should be uniformly sampled with replacement from the input dataset.
     """
 
     def __init__(self, params):
