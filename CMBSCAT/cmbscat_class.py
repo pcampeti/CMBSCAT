@@ -6,12 +6,12 @@ import tensorflow as tf
 import foscat.alm as foscat_alm
 import foscat.Synthesis as synthe
 
-class cmbscat:
+class cmbscat_pipe:
     """
     Performs scattering covariance synthesis on a dataset of Q,U polarization input maps.
-    Note that by default it assumes the single-target approach (see Campeti et al. 2025): 
-    synthesis should be repeated running this script for every target in the input dataset. 
-    Then targets should be uniformly sampled with replacement from the input dataset.
+    Assumes by default single-target approach (Campeti et al. 2025): after a batch synthesis, 
+    targets should be uniformly sampled with replacement from the input dataset, and for each sampled 
+    target, a synthesized map should be selected from the corresponding batch.
     """
 
     def __init__(self, params):
@@ -29,14 +29,12 @@ class cmbscat:
         self.gauss_real     = params.get('gauss_real') # if True generates gaussian realization from a reference covariance as input dataset, else uses directly the input maps. 
         self.NGEN           = params.get('NGEN') # number of maps in a batch for mean-field gradient descent
         self.n_new_samples  = params.get('n_new_samples') # number of samples in the input dataset
-        self.index_ref      = params.get('index_ref') # indices of input maps considere
-        self.seed           = params.get('seed') # list of seeds for the intialization of the batch for gradient descent
+        self.index_ref      = params.get('index_ref') # indices of input maps
+        self.seed           = params.get('seed') # list of seeds for initialization of batch for gradient descent
         self.nmask          = params.get('nmask') # number of masks used
         self.mask           = params.get('mask', None) # mask
         self.nside          = params.get('nside') # nside desired
         self.NORIENT        = params.get('NORIENT', 4) # number of orientations used in the SC 
-        self.new_start      = params.get('new_start', 0) # first target in input dataset
-        self.new_finish     = params.get('new_finish', 1) # last target in input dataset
         self.cov            = params.get('cov', True) # whether to use SC or ST
         self.no_orient      = params.get('no_orient', False) # if True doesn't use the orientation matrices
         self.nstep          = params.get('nstep', 1000) # number of steps in gradient descent
@@ -430,13 +428,12 @@ class cmbscat:
 
 
         # loop over the target input maps 
-        for iref in self.index_ref[self.new_start : self.new_finish]:
+        for iref in self.index_ref:
             first = True
             f_outname = f'{self.outname}_{iref:03d}'
             
             # Storage for final maps & losses
-            allmap = np.zeros([len(self.seed[iref]), self.im.shape[1], self.im.shape[2]])
-            floss  = np.zeros([len(self.seed[iref])])
+            allmap = np.zeros([self.NGEN, self.im.shape[1], self.im.shape[2]])
 
             if self.ave_target:
                 # use average SC coeff of the input dataset as target
@@ -494,53 +491,51 @@ class cmbscat:
             # Combine all losses
             sy = synthe.Synthesis([loss1, loss2, lossx, loss_sp])
 
-            # Loop over random seeds
-            for iseed in range(0, len(self.seed[iref]), self.NGEN):
-                np.random.seed(self.seed[iref][iseed])
+            # random seed
+            np.random.seed(self.seed[iref])
                 
-                # Initialize batch of Gaussian random white initial maps for the synthesis
-                imap = np.random.randn(self.NGEN, 2, 12*self.nside*self.nside)
+            # Initialize batch of Gaussian random white initial maps for the synthesis
+            imap = np.random.randn(self.NGEN, 2, 12*self.nside*self.nside)
  
 
-                if self.ave_target:
-                    # if average-target scale the intial white noise to match one of the input map std dev
-                    ran_ind = np.random.randint(0, self.n_new_samples)
-                    imap[:, 0] = imap[:, 0] * np.std(self.im[ran_ind, 0, :])
-                    imap[:, 1] = imap[:, 1] * np.std(self.im[ran_ind, 1, :])
+            if self.ave_target:
+                # if average-target scale the intial white noise to match one of the input map std dev
+                ran_ind = np.random.randint(0, self.n_new_samples)
+                imap[:, 0] = imap[:, 0] * np.std(self.im[ran_ind, 0, :])
+                imap[:, 1] = imap[:, 1] * np.std(self.im[ran_ind, 1, :])
 
-                else:
-                    # Scale the random to match the current input map (ref) std dev
-                    imap[:, 0] = imap[:, 0] * np.std(self.im[iref, 0, :])
-                    imap[:, 1] = imap[:, 1] * np.std(self.im[iref, 1, :])
+            else:
+                # Scale the random to match the current input map (ref) std dev
+                imap[:, 0] = imap[:, 0] * np.std(self.im[iref, 0, :])
+                imap[:, 1] = imap[:, 1] * np.std(self.im[iref, 1, :])
 
-                # run syntesis using HealpixML
-                omap = sy.run(
+            # run syntesis using HealpixML
+            omap = sy.run(
                     imap,
                     EVAL_FREQUENCY=10,
                     NUM_EPOCHS=self.nstep
                 ).numpy()
 
-                # Store best loss for each map in the batch
-                floss[iseed] = np.min(sy.get_history())
+            # Store best loss for each map in the batch
+            floss = np.min(sy.get_history())
 
-                # Store results
-                for k in range(iseed*self.NGEN, (iseed+1)*self.NGEN):
-                    allmap[k] = omap[k-iseed*self.NGEN] * self.dim + self.mdim
+            # Store results
+            for k in range(self.NGEN):
+                allmap[k] = omap[k] * self.dim + self.mdim
 
-                # Save partial results
-                if first:
-                    lim = self.im * self.dim + self.mdim
-                    np.save(self.outpath + f'in_{f_outname}_map_{self.nside}.npy', lim)
-                    if mask is not None:
-                        np.save(self.outpath + f'mm_{f_outname}_map_{self.nside}.npy', mask[0])
-                    np.save(self.outpath + f'out_{f_outname}_log_{self.nside}.npy', sy.get_history())
-                    np.save(self.outpath + f'out_{f_outname}_map_{self.nside}.npy', 
-                            omap[k-iseed*self.NGEN]*self.dim + self.mdim)
-                    first=False
+            # Save partial results
+            if first:
+                lim = self.im * self.dim + self.mdim
+                np.save(self.outpath + f'in_{f_outname}_map_{self.nside}.npy', lim)
+                if mask is not None:
+                    np.save(self.outpath + f'mm_{f_outname}_map_{self.nside}.npy', mask[0])
+                np.save(self.outpath + f'out_{f_outname}_map_{self.nside}.npy', 
+                        omap*self.dim + self.mdim)
+                first=False
 
-            # Final save
-            np.save(self.outpath + f'out_{f_outname}_map_{self.nside}.npy', allmap)
-            np.save(self.outpath + f'out_{f_outname}_loss_{self.nside}.npy', floss)
+        # Final save
+        np.save(self.outpath + f'out_{f_outname}_map_{self.nside}.npy', allmap)
+        np.save(self.outpath + f'out_{f_outname}_loss_{self.nside}.npy', floss)
         
         print("[LOOP_SYNTHESIS] Computation Done.")
 
