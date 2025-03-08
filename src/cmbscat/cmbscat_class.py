@@ -5,13 +5,14 @@ import healpy as hp
 import tensorflow as tf
 import foscat.alm as foscat_alm
 import foscat.Synthesis as synthe
+from tqdm import tqdm, trange
 
 class cmbscat_pipe:
     """
-    Performs scattering covariance synthesis on a dataset of Q,U polarization input maps.
-    Assumes by default single-target approach (Campeti et al. 2025): after a batch synthesis, 
-    targets should be uniformly sampled with replacement from the input dataset, and for each sampled 
-    target, a synthesized map should be selected from the corresponding batch.
+    Performs scattering covariance synthesis with mean-field microcanonical gradient descent 
+    on each sample of a dataset of Healpix Q and U maps. 
+    With minimal adaptation can run also on T,Q,U maps. 
+    Assumes by default single-target approach (Campeti et al. 2025). 
     """
 
     def __init__(self, params):
@@ -27,11 +28,10 @@ class cmbscat_pipe:
         # Extract parameters (with defaults if needed)
         self.NNN            = params.get('NNN') # number of maps of the reference dataset
         self.gauss_real     = params.get('gauss_real') # if True generates gaussian realization from a reference covariance as input dataset, else uses directly the input maps. 
+        self.gauss_real_seed = params.get('gauss_real_seed', 42) # seed for reproducibility of the gaussian realizations
         self.NGEN           = params.get('NGEN') # number of maps in a batch for mean-field gradient descent
         self.n_new_samples  = params.get('n_new_samples') # number of samples in the input dataset
-        self.index_ref      = params.get('index_ref') # indices of input maps
-        self.seed           = params.get('seed') # list of seeds for initialization of batch for gradient descent
-        self.nmask          = params.get('nmask') # number of masks used
+        self.nmask          = params.get('nmask', 2) # number of masks used
         self.mask           = params.get('mask', None) # mask
         self.nside          = params.get('nside') # nside desired
         self.NORIENT        = params.get('NORIENT', 4) # number of orientations used in the SC 
@@ -39,10 +39,13 @@ class cmbscat_pipe:
         self.no_orient      = params.get('no_orient', False) # if True doesn't use the orientation matrices
         self.nstep          = params.get('nstep', 1000) # number of steps in gradient descent
         self.KERNELSZ       = params.get('KERNELSZ', 3) # wavelet kernel size in pixels
-        self.ave_target     = params.get('ave_target', False) # Wheter to use the average-target strategy. Default is single-target 
+        self.ave_target     = params.get('ave_target', False) # Wheter to use the average-target. Default is single-target 
         self.outname        = params.get('outname', 'output') # output name for the synthesized maps
         self.outpath        = params.get('outpath', './data/') # output path
         self.data_path      = params.get('data') # path fo input data
+
+        # derived parameters from input ones
+        self.index_ref      = [k for k in range(self.n_new_samples)] # indices of input maps
 
         # Depending if you want the scattering transform or the scattering covariance
         # import the appropriate foscat scat module
@@ -131,7 +134,7 @@ class cmbscat_pipe:
         # Downgrade if needed and reorder from RING to NEST the input data 
         if nside2 != self.nside:
             im2 = np.zeros([self.NNN, 2, 12*self.nside*self.nside])
-            for k in range(self.NNN):
+            for k in trange(self.NNN, desc="[PREPROCESS] Downgrading and reordering data to NEST"):
                 tmp = np.zeros([2, 12*self.nside*self.nside])
                 for l in range(2):
                     tmp[l] = hp.ud_grade(im[k, l], self.nside)
@@ -141,12 +144,11 @@ class cmbscat_pipe:
         else:
             # If same nside, just reorder ring->nest if needed
             im2 = np.zeros([self.NNN, 2, 12*self.nside*self.nside])
-            for k in range(self.NNN):
+            for k in trange(self.NNN, desc="[PREPROCESS] Reordering data to NEST"):
                 for l in range(2):
                     im2[k, l, :] = im[k, l, idx_nest]
             im = im2
 
-        print(f"[PREPROCESS] Data shape after regrade/reorder: {im.shape}")
         self.im = im
 
 
@@ -172,13 +174,13 @@ class cmbscat_pipe:
         data_centered = data_reshaped - m
 
         # SVD
-        print("[GAUSS] Performing SVD for PCA-based map generation...")
+        print("[GAUSS] Performing SVD to generate random Gaussian realizations.")
         U, S, Vt = np.linalg.svd(data_centered, full_matrices=False)
         eigenvalues = (S**2) / (n_samples - 1)
         V = Vt.T
 
         # Generate random coefficients
-        #np.random.seed(42)
+        np.random.seed(self.gauss_real_seed)
         coefficients = np.random.randn(self.n_new_samples, len(eigenvalues))
         scaled_coefficients = coefficients * np.sqrt(eigenvalues)
 
@@ -189,7 +191,7 @@ class cmbscat_pipe:
 
         # Overwrite self.im with new maps
         self.im = new_maps
-        print(f"[GAUSS] Generated {self.n_new_samples} random Gaussian maps of shape {self.im.shape}")
+        print(f"[GAUSS] Generated {self.n_new_samples} random Gaussian maps.")
 
 
     # -------------------------------------------------------------------------
@@ -231,10 +233,10 @@ class cmbscat_pipe:
         )
         
         if self.no_orient:
+            print("[INIT_ORIENT] Orientation disabled. cmat = None.")
             self.cmat1 = self.cmat12 = None
             self.cmat2 = self.cmat22 = None
             self.cmatx = self.cmatx2 = None
-            print("[INIT_ORIENT] Orientation disabled. cmat = None.")
             return
         
         # Compute orientation matrices
@@ -273,8 +275,7 @@ class cmbscat_pipe:
         self.ref2 = {}
         self.refx = {}
         
-        print("[INIT_REF_SCAT] Computing reference scattering for each map.")
-        for k in range(n_maps):
+        for k in trange(n_maps, desc="[INIT_REF_SCAT] Computing reference scattering of input maps."):
             # Q channel
             self.ref1[k] = scat_op.eval(im[k, 0], norm='self',
                                         cmat=self.cmat1, cmat2=self.cmat12)
@@ -286,8 +287,6 @@ class cmbscat_pipe:
             # Cross (Q,U)
             self.refx[k] = scat_op.eval(im[k, 0], image2=im[k, 1], norm='self',
                                         cmat=self.cmatx, cmat2=self.cmatx2)
-
-        print("[INIT_REF_SCAT] Done computing reference scattering.")
 
 
     # -------------------------------------------------------------------------
@@ -307,14 +306,11 @@ class cmbscat_pipe:
         self.c_l1 = np.zeros([n_maps, 3, 3*self.nside])
         self.c_l2 = np.zeros([n_maps, 3, 3*self.nside])
 
-        print("[INIT_REF_SCAT] Computing angular power spectra for each map.")
-        for k in range(n_maps):
+        for k in trange(n_maps, desc="[INIT_REF_PS] Computing angular power spectra of input maps."):
             # Power spectra of from un-normalized input maps if needed
             tp_l2, tp_l1 = self.dospec(im[k])
             self.c_l1[k] = tp_l1.numpy()
             self.c_l2[k] = tp_l2.numpy()
-
-        print("[INIT_REF_SCAT] Done computing reference power spectra.")
 
 
 
@@ -406,6 +402,12 @@ class cmbscat_pipe:
         Main loop that builds losses for each reference map (iref), 
         runs the Synthesis, and saves results.
         """
+
+        if self.ave_target:
+            print("[LOOP_SYNTHESIS] Using average-target")
+        else:
+            print("[LOOP_SYNTHESIS] Using single-target")
+
         # Precompute average and std of power spectra c_l1, c_l2
         r_c_l1 = np.mean(self.c_l1, axis=0)
         r_c_l2 = np.mean(self.c_l2, axis=0)
@@ -428,7 +430,7 @@ class cmbscat_pipe:
 
 
         # loop over the target input maps 
-        for iref in self.index_ref:
+        for iref in tqdm(self.index_ref, desc="[LOOP_SYNTHESIS] Synthesis over targets"):
             first = True
             f_outname = f'{self.outname}_{iref:03d}'
             
@@ -473,7 +475,7 @@ class cmbscat_pipe:
                     self.scat_op.backend.bk_cast(r_c_l2),
                     self.scat_op.backend.bk_cast(d_c_l1),
                     self.scat_op.backend.bk_cast(d_c_l2),
-                    self.alm  # or self.alm if you want
+                    self.alm 
                     )
 
             else:    
@@ -485,14 +487,15 @@ class cmbscat_pipe:
                     self.scat_op.backend.bk_cast(self.c_l2[iref]),
                     self.scat_op.backend.bk_cast(d_c_l1),
                     self.scat_op.backend.bk_cast(d_c_l2),
-                    self.alm  # or self.alm if you want
+                    self.alm 
                     )
 
             # Combine all losses
             sy = synthe.Synthesis([loss1, loss2, lossx, loss_sp])
 
-            # random seed
-            np.random.seed(self.seed[iref])
+            # random seed set to initialize the white noise batch
+            np.random.seed(iref)
+            print("[LOOP_SYNTHESIS] Random seed for batch initialization ", iref)
                 
             # Initialize batch of Gaussian random white initial maps for the synthesis
             imap = np.random.randn(self.NGEN, 2, 12*self.nside*self.nside)
@@ -510,6 +513,8 @@ class cmbscat_pipe:
                 imap[:, 1] = imap[:, 1] * np.std(self.im[iref, 1, :])
 
             # run syntesis using HealpixML
+            print("[LOOP_SYNTHESIS] Displaying simultaneous batch loss minimization for target ", iref)
+                        
             omap = sy.run(
                     imap,
                     EVAL_FREQUENCY=10,
@@ -537,7 +542,7 @@ class cmbscat_pipe:
         np.save(self.outpath + f'out_{f_outname}_map_{self.nside}.npy', allmap)
         np.save(self.outpath + f'out_{f_outname}_loss_{self.nside}.npy', floss)
         
-        print("[LOOP_SYNTHESIS] Computation Done.")
+        print("[LOOP_SYNTHESIS] Loss minimization completed.")
 
 
     # -------------------------------------------------------------------------
@@ -547,6 +552,12 @@ class cmbscat_pipe:
         """
         High-level method that calls each sub-step in order.
         """
+        # Print all parameters nicely
+        print("\n========== RUN() START: Using the following parameters ==========")
+        for key, val in self.params.items():
+            print(f"  {key} : {val}")
+        print("=================================================================")
+
         # 1) Preprocessing
         self.preprocess_data()
 
