@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cmbscat"             
-version = "0.4.0"
-description = "A package for scattering covariance synthesis on a dataset of Healpix Q,U polarization input maps based on the HealpixML package."
+version = "0.13.0"
+description = "A package for scattering covariance synthesis on datasets of Healpix maps, based on the HealpixML package."
 authors = [
   { name="Paolo CAMPETI", email="paolo.campeti@fe.infn.it" },
   { name = "Jean-Marc DELOUIS", email = "jean.marc.delouis@ifremer.fr" },
@@ -24,5 +24,7 @@ dependencies = [
   "matplotlib",
   "healpy",
   "tensorflow",
-  "foscat" 
+  "foscat",
+  "tqdm"
 ]
+
