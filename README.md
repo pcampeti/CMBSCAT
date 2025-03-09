@@ -1,2 +1,2 @@
-# CMBSCAT: a fast map-based emulator for augmentation of small datasets of simulations of CMB systematics
+# CMBSCAT: fast map-based emulator for CMB systematics
 
