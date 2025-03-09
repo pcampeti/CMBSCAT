@@ -56,7 +56,7 @@ class cmbscat_pipe:
         self.sc = sc
 
         # Prepare the alm object for the ps loss
-        self.alm = foscat_alm.alm(nside=self.nside)
+        self.alm = None 
         
         # Initialize placeholders for data/matrices/scat coefficients
         self.im    = None   # input data after regrading and normalizing
@@ -215,23 +215,30 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 4) Initialization of orientation matrices
+    # 4) Initialization of scattering operator
     # -------------------------------------------------------------------------
-    def init_scat_and_orientation_matrices(self):
+    def init_scat_op(self):
         """
-        Initialize the scattering operator self.scat_op and orientation matrices
-        (cmat1, cmat12, cmat2, cmat22, cmatx, cmatx2). If no_orient=True, 
-        set them to None.
+        Initialize the scattering operator self.scat_op.
         """
         # Build scattering operator
-        print("[INIT_ORIENT] Initializing scattering operator.")
+        print("[INIT_SCAT] Initializing scattering operator.")
         self.scat_op = self.sc.funct(
             NORIENT=self.NORIENT,
             KERNELSZ=self.KERNELSZ,
             JmaxDelta=0,
             all_type='float64'
         )
-        
+
+    # -------------------------------------------------------------------------
+    # 5) Initialization of orientation matrices
+    # -------------------------------------------------------------------------
+    def init_orient_mat(self):
+        """
+        Initialize the orientation matrices
+        (cmat1, cmat12, cmat2, cmat22, cmatx, cmatx2). If no_orient=True, 
+        set them to None.
+        """
         if self.no_orient:
             print("[INIT_ORIENT] Orientation disabled. cmat = None.")
             self.cmat1 = self.cmat12 = None
@@ -259,7 +266,7 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 5) Compute reference scattering coefficients
+    # 6) Compute reference scattering coefficients
     # -------------------------------------------------------------------------
     def init_reference_scat(self):
         """
@@ -268,8 +275,9 @@ class cmbscat_pipe:
         Store them as class attributes for later usage in losses.
         """
         im = self.im
-        scat_op = self.scat_op
         
+        scat_op = self.scat_op
+
         n_maps = im.shape[0]
         self.ref1 = {}
         self.ref2 = {}
@@ -290,7 +298,7 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 5) Compute reference angular power spectra
+    # 7) Compute reference angular power spectra
     # -------------------------------------------------------------------------
     def init_reference_ps(self):
         """
@@ -302,6 +310,9 @@ class cmbscat_pipe:
         im = self.im
 
         n_maps = im.shape[0]
+
+        # Prepare the alm object for the ps loss
+        self.alm = foscat_alm.alm(nside=self.nside, backend=self.scat_op)
         
         self.c_l1 = np.zeros([n_maps, 3, 3*self.nside])
         self.c_l2 = np.zeros([n_maps, 3, 3*self.nside])
@@ -315,7 +326,7 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 6) Define loss functions
+    # 8) Define loss functions
     # -------------------------------------------------------------------------
     def The_loss_spec(self, x, scat_operator, args):
         """
@@ -395,7 +406,7 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 7) Looping over index_ref to run the synthesis for each target map
+    # 9) Looping over index_ref to run the synthesis for each target map
     # -------------------------------------------------------------------------
     def loop_synthesis(self):
         """
@@ -546,7 +557,7 @@ class cmbscat_pipe:
 
 
     # -------------------------------------------------------------------------
-    # 8) Master run method calling sub-steps
+    # 10) Master run method calling sub-steps
     # -------------------------------------------------------------------------
     def run(self):
         """
@@ -561,23 +572,26 @@ class cmbscat_pipe:
         # 1) Preprocessing
         self.preprocess_data()
 
+        # 2) Optional: SVD-based Gaussian realization from the pixel covariance matrix
         if self.gauss_real:
-            # 2) PCA-based Gaussian realization from the reference pixel covariance matrix
             self.generate_gaussian_maps()
 
-        # 5) Compute reference scattering for each map
+        # 3) Initialize scattering operator
+        self.init_scat_op()     
+
+        # 4) Compute reference scattering for each map
         self.init_reference_ps()
 
-        # 3) Normalize data
+        # 5) Normalize data by their mean and std
         self.normalize_data()
 
-        # 4) Initialize scattering operator and orientation matrices
-        self.init_scat_and_orientation_matrices()
+        # 6) Initialize orientation matrices
+        self.init_orient_mat()
 
-        # 5) Compute reference SC coefficients for each map in the input dataset
+        # 7) Compute reference SC coefficients for each map in the input dataset
         self.init_reference_scat()
 
-        # 6) Initialize batch of running maps to white noise and run synthesis loop
+        # 8) Initialize batch of running maps to white noise and run synthesis loop
         self.loop_synthesis()
 
         print("[RUN] All steps completed.")
