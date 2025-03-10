@@ -10,7 +10,7 @@ pip install cmbscat
 You can then set generate a new dataset of CMB systematics maps by doing:
 
 ```python
-import cmbscat
+from cmbscat import cmbscat_pipe
 
 # Set emulator parameters
 params = {
@@ -28,7 +28,7 @@ params = {
 }
 
 # Initialize pipeline...
-pipeline = cmbscat.cmbscat_pipe(params)
+pipeline = cmbscat_pipe(params)
 
 #...and run! This generates NGEN new maps for each of the n_samples input maps
 cmb_pipeline.run()
