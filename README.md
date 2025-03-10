@@ -20,7 +20,7 @@ params = {
     'n_samples'    : 10,               # Samples in the input dataset
     'nside'        : 16,               # N_side of input maps
     'NORIENT'      : 4,                # Orientations in the SC
-    'nstep'        : 500,              # Steps in gradient descent
+    'nstep'        : 50,              # Steps in gradient descent
     'KERNELSZ'     : 3,                # Wavelet kernel size
     'outname'      : 'example',        # Output name
     'outpath'      : './data/',        # Output path
