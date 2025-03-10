@@ -1,0 +1,89 @@
+Metadata-Version: 2.2
+Name: cmbscat
+Version: 0.17.0
+Summary: A package for scattering covariance synthesis on datasets of Healpix maps, based on the HealpixML package.
+Author-email: Paolo CAMPETI <paolo.campeti@fe.infn.it>, Jean-Marc DELOUIS <jean.marc.delouis@ifremer.fr>
+License: BSD 3-Clause License
+        
+        Copyright (c) 2025, Paolo Campeti
+        
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions are met:
+        
+        1. Redistributions of source code must retain the above copyright notice, this
+           list of conditions and the following disclaimer.
+        
+        2. Redistributions in binary form must reproduce the above copyright notice,
+           this list of conditions and the following disclaimer in the documentation
+           and/or other materials provided with the distribution.
+        
+        3. Neither the name of the copyright holder nor the names of its
+           contributors may be used to endorse or promote products derived from
+           this software without specific prior written permission.
+        
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+        OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+        
+Keywords: scattering covariance,scattering transform,healpy,gradient descent,microcanonical,wavelet,HealpixML,Healpix,generative models
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: matplotlib
+Requires-Dist: healpy
+Requires-Dist: tensorflow
+Requires-Dist: foscat
+Requires-Dist: tqdm
+
+# CMBSCAT: fast map-based emulator for CMB systematics
+
+
+`cmbscat` is a pip installable package that can synthesize new map samples (called **emulations**) which are both visually and statistically similar to the ones found in an (eventually) small dataset of simulations. 
+
+## Install with pip
+You can install it simply doing:
+```
+pip install cmbscat
+```
+
+## Usage
+You can then set generate a new dataset of CMB systematics maps by doing:
+
+```python
+from cmbscat import cmbscat_pipe
+
+# Set emulator parameters
+params = {
+    'NNN'          : 10,             # Number of input reference maps
+    'gauss_real'   : True,             # Generate new input data as Gaussian realizations from pixel covariance of original data
+    'NGEN'         : 10,               # Batch size for gradient descent
+    'n_samples'    : 10,               # Samples in the input dataset
+    'nside'        : 16,               # N_side of input maps
+    'NORIENT'      : 4,                # Orientations in the SC
+    'nstep'        : 50,              # Steps in gradient descent
+    'KERNELSZ'     : 3,                # Wavelet kernel size
+    'outname'      : 'example',        # Output name
+    'outpath'      : './data/',        # Output path
+    'data'         : 'variable_gain_sims.npy'  # Input data path
+}
+
+# Initialize pipeline...
+pipeline = cmbscat_pipe(params)
+
+#...and run! This generates NGEN new maps for each of the n_samples input maps
+pipeline.run()
+```
+
+## Tutorial Notebook
+You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb)

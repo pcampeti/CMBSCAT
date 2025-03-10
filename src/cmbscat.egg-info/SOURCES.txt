@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/cmbscat/__init__.py
+src/cmbscat/cmbscat_class.py
+src/cmbscat.egg-info/PKG-INFO
+src/cmbscat.egg-info/SOURCES.txt
+src/cmbscat.egg-info/dependency_links.txt
+src/cmbscat.egg-info/requires.txt
+src/cmbscat.egg-info/top_level.txt
