@@ -27,10 +27,10 @@ class cmbscat_pipe:
         
         # Extract parameters (with defaults if needed)
         self.NNN            = params.get('NNN') # number of maps of the reference dataset
-        self.gauss_real     = params.get('gauss_real') # if True generates gaussian realization from a reference covariance as input dataset, else uses directly the input maps. 
-        self.gauss_real_seed = params.get('gauss_real_seed', 42) # seed for reproducibility of the gaussian realizations
+        self.gauss_real     = params.get('gauss_real', False) # if True generates gaussian realization from a reference covariance as input dataset, else uses directly the input maps. 
+        self.gauss_seed     = params.get('gauss_seed', 42) # seed for reproducibility of the gaussian realizations
         self.NGEN           = params.get('NGEN') # number of maps in a batch for mean-field gradient descent
-        self.n_new_samples  = params.get('n_new_samples') # number of samples in the input dataset
+        self.n_samples      = params.get('n_samples') # number of samples in the input dataset
         self.nmask          = params.get('nmask', 2) # number of masks used
         self.mask           = params.get('mask', None) # mask
         self.nside          = params.get('nside') # nside desired
@@ -45,7 +45,7 @@ class cmbscat_pipe:
         self.data_path      = params.get('data') # path fo input data
 
         # derived parameters from input ones
-        self.index_ref      = [k for k in range(self.n_new_samples)] # indices of input maps
+        self.index_ref      = [k for k in range(self.n_samples)] # indices of input maps
 
         # Depending if you want the scattering transform or the scattering covariance
         # import the appropriate foscat scat module
@@ -62,7 +62,8 @@ class cmbscat_pipe:
         self.im    = None   # input data after regrading and normalizing
         self.dim   = None   # standard deviation of input maps
         self.mdim  = None   # Mean of input maps
-        self.scat_op = None
+        self.scat_op = None # scattering operator
+        self.imap = None    # initial (white noise) maps for gradient descent
         
         # Orientation matrices
         self.cmat1  = None
@@ -158,7 +159,7 @@ class cmbscat_pipe:
     def generate_gaussian_maps(self):
         """
         Uses PCA (via SVD) on the loaded dataset to generate random Gaussian maps.
-        Overwrites self.im with the new generated maps (self.n_new_samples of them).
+        Overwrites self.im with the new generated maps (self.n_samples of them).
         """
         if self.im is None:
             raise ValueError("No data loaded. Please call preprocess_data() first.")
@@ -180,18 +181,18 @@ class cmbscat_pipe:
         V = Vt.T
 
         # Generate random coefficients
-        np.random.seed(self.gauss_real_seed)
-        coefficients = np.random.randn(self.n_new_samples, len(eigenvalues))
+        np.random.seed(self.gauss_seed)
+        coefficients = np.random.randn(self.n_samples, len(eigenvalues))
         scaled_coefficients = coefficients * np.sqrt(eigenvalues)
 
         # Generate new maps
         new_maps_centered = scaled_coefficients @ V.T
         new_maps_reshaped = new_maps_centered + m
-        new_maps = new_maps_reshaped.reshape(self.n_new_samples, n_channels, N_pix)
+        new_maps = new_maps_reshaped.reshape(self.n_samples, n_channels, N_pix)
 
         # Overwrite self.im with new maps
         self.im = new_maps
-        print(f"[GAUSS] Generated {self.n_new_samples} random Gaussian maps.")
+        print(f"[GAUSS] Generated {self.n_samples} random Gaussian maps.")
 
 
     # -------------------------------------------------------------------------
@@ -509,25 +510,25 @@ class cmbscat_pipe:
             print("[LOOP_SYNTHESIS] Random seed for batch initialization ", iref)
                 
             # Initialize batch of Gaussian random white initial maps for the synthesis
-            imap = np.random.randn(self.NGEN, 2, 12*self.nside*self.nside)
+            self.imap = np.random.randn(self.NGEN, 2, 12*self.nside*self.nside)
  
 
             if self.ave_target:
                 # if average-target scale the intial white noise to match one of the input map std dev
-                ran_ind = np.random.randint(0, self.n_new_samples)
-                imap[:, 0] = imap[:, 0] * np.std(self.im[ran_ind, 0, :])
-                imap[:, 1] = imap[:, 1] * np.std(self.im[ran_ind, 1, :])
+                ran_ind = np.random.randint(0, self.n_samples)
+                self.imap[:, 0] = self.imap[:, 0] * np.std(self.im[ran_ind, 0, :])
+                self.imap[:, 1] = self.imap[:, 1] * np.std(self.im[ran_ind, 1, :])
 
             else:
                 # Scale the random to match the current input map (ref) std dev
-                imap[:, 0] = imap[:, 0] * np.std(self.im[iref, 0, :])
-                imap[:, 1] = imap[:, 1] * np.std(self.im[iref, 1, :])
+                self.imap[:, 0] = self.imap[:, 0] * np.std(self.im[iref, 0, :])
+                self.imap[:, 1] = self.imap[:, 1] * np.std(self.im[iref, 1, :])
 
             # run syntesis using HealpixML
             print("[LOOP_SYNTHESIS] Displaying simultaneous batch loss minimization for target ", iref)
                         
             omap = sy.run(
-                    imap,
+                    self.imap,
                     EVAL_FREQUENCY=10,
                     NUM_EPOCHS=self.nstep
                 ).numpy()
