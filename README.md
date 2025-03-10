@@ -1,7 +1,7 @@
 # CMBSCAT: Map-Based Emulator for CMB Systematics with Scattering Covariances
 
 
-`cmbscat` is a pip installable package that can synthesize new map samples (called **emulations**) on the HEALPix sphere which are both visually and statistically similar to the ones found in an (eventually) small dataset of simulations. 
+`cmbscat` is a pip installable package that can synthesize new map samples (called **emulations**) on the HEALPix sphere which are both visually and statistically similar to the ones found in an (eventually) small dataset of simulations. `cmbscat` relies heavily on the [`HealpixML`](https://github.com/jmdelouis/HealpixML) library for efficient scattering covariance computation on the HEALPix sphere. 
 
 ## Install with pip
 You can install it simply doing:
@@ -38,4 +38,19 @@ pipeline.run()
 ```
 
 ## Tutorial Notebook
-You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb)
+You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb). Specifically we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in [Campeti et al. 2025].
+
+## Citations
+Should this code be used in any way, we kindly ask that the following article is cited:
+
+```
+@article{campeti:systematics_emulator, 
+   author      = "Paolo Campeti, Jean-Marc Delouis, Luca Pagano, Erwan Allys, Massimiliano Lattanzi, Martina Gerbino",
+   title       = "From few to many maps: A fast map-level emulator for extreme augmentation of CMB systematics datasets",
+   eprint = "",
+   archivePrefix = "arXiv",
+   primaryClass = "astro-ph.CO",
+   month = "",
+   year = "2025"
+}
+```
