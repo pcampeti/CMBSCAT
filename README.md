@@ -27,9 +27,9 @@ params = {
     'data'         : 'variable_gain_sims.npy'  # Input data path
 }
 
-# Initialize pipeline
+# Initialize pipeline...
 pipeline = cmbscat.cmbscat_pipe(params)
 
-# Run! Generate NGEN new maps for each of the n_samples input maps
+#...and run! This generates NGEN new maps for each of the n_samples input maps
 cmb_pipeline.run()
 ```
