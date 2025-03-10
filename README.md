@@ -31,5 +31,5 @@ params = {
 pipeline = cmbscat_pipe(params)
 
 #...and run! This generates NGEN new maps for each of the n_samples input maps
-cmb_pipeline.run()
+pipeline.run()
 ```
