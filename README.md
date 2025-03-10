@@ -3,10 +3,13 @@
 
 `cmbscat` is a pip installable package that can synthesize new map samples (called **emulations**) which are both visually and statistically similar to the ones found in an (eventually) small dataset of simulations. 
 
+## Install with pip
 You can install it simply doing:
 ```
 pip install cmbscat
 ```
+
+## Usage
 You can then set generate a new dataset of CMB systematics maps by doing:
 
 ```python
@@ -33,3 +36,6 @@ pipeline = cmbscat_pipe(params)
 #...and run! This generates NGEN new maps for each of the n_samples input maps
 pipeline.run()
 ```
+
+## Tutorial Notebook
+You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb)
