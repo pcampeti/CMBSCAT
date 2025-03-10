@@ -17,7 +17,7 @@ params = {
     'NNN'          : 1000,             # Number of input reference maps
     'gauss_real'   : True,             # Generate new input data as Gaussian realizations from pixel covariance of original data
     'NGEN'         : 10,               # Batch size for gradient descent
-    'n_samples': 10,               # Samples in the input dataset
+    'n_samples'    : 10,               # Samples in the input dataset
     'nside'        : 16,               # N_side of input maps
     'NORIENT'      : 4,                # Orientations in the SC
     'nstep'        : 500,              # Steps in gradient descent
