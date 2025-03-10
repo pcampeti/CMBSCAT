@@ -42,6 +42,7 @@ You can find an introductory notebook explaining all features of the `cmbscat` p
 
 Specifically we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in [Campeti et al. 2025].
 
+
 ## Citations
 Should this code be used in any way, we kindly ask that the following article is cited:
 
