@@ -3,8 +3,8 @@ import os
 import matplotlib.pyplot as plt
 import healpy as hp
 import tensorflow as tf
-import foscat.alm as foscat_alm
-import foscat.Synthesis as synthe
+import healpixml.alm as hml_alm
+import healpixml.Synthesis as synthe
 from tqdm import tqdm, trange
 
 class cmbscat_pipe:
@@ -48,11 +48,11 @@ class cmbscat_pipe:
         self.index_ref      = [k for k in range(self.n_samples)] # indices of input maps
 
         # Depending if you want the scattering transform or the scattering covariance
-        # import the appropriate foscat scat module
+        # import the appropriate healpixml scattering transform module
         if self.cov:
-            import foscat.scat_cov as sc
+            import healpixml.scat_cov as sc
         else:
-            import foscat.scat as sc
+            import healpixml.scat as sc
         self.sc = sc
 
         # Prepare the alm object for the ps loss
@@ -103,7 +103,7 @@ class cmbscat_pipe:
     @tf.function
     def dospec(self, im):
         """
-        A tf.function to compute the power spectra using foscat_alm.alm.anafast.
+        A tf.function to compute the power spectra using healpixml_alm.alm.anafast.
         Returns both the L_1 and the L_2 norm angular power spectra.
         Args:
             im (tf.Tensor or np.array): input map shape (n_samples, 2, 12*nside^2) or (2, 12*nside^2)
@@ -313,7 +313,7 @@ class cmbscat_pipe:
         n_maps = im.shape[0]
 
         # Prepare the alm object for the ps loss
-        self.alm = foscat_alm.alm(nside=self.nside, backend=self.scat_op)
+        self.alm = healpixml_alm.alm(nside=self.nside, backend=self.scat_op)
         
         self.c_l1 = np.zeros([n_maps, 3, 3*self.nside])
         self.c_l2 = np.zeros([n_maps, 3, 3*self.nside])
