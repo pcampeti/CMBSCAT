@@ -1,6 +1,0 @@
-numpy
-matplotlib
-healpy
-tensorflow
-healpixml
-tqdm
