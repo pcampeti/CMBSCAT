@@ -1,7 +1,9 @@
 # Map-based emulator for CMB systematics with scattering covariances
 
 
-`cmbscat` is a pip installable package that can synthesize new map samples (**emulations**) on the HEALPix sphere which are both visually and statistically similar to the ones found in an (eventually small) dataset of simulations. `cmbscat` relies heavily on the [`HealpixML`](https://github.com/jmdelouis/HealpixML) library for efficient scattering covariance computation on the HEALPix sphere. 
+`cmbscat` is a pip installable package that can synthesize new map samples (**emulations**) on the HEALPix sphere which are both visually and statistically similar to the ones found in an (eventually small) dataset of simulations. 
+
+`cmbscat` relies heavily on the [`HealpixML`](https://github.com/jmdelouis/HealpixML) library for efficient scattering covariance computation on the HEALPix sphere. 
 
 ## Install with pip
 You can install it simply doing:
