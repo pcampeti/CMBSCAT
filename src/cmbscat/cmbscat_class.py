@@ -103,7 +103,7 @@ class cmbscat_pipe:
     @tf.function
     def dospec(self, im):
         """
-        A tf.function to compute the power spectra using healpixml_alm.alm.anafast.
+        A tf.function to compute the power spectra using hml_alm.alm.anafast.
         Returns both the L_1 and the L_2 norm angular power spectra.
         Args:
             im (tf.Tensor or np.array): input map shape (n_samples, 2, 12*nside^2) or (2, 12*nside^2)
@@ -313,7 +313,7 @@ class cmbscat_pipe:
         n_maps = im.shape[0]
 
         # Prepare the alm object for the ps loss
-        self.alm = healpixml_alm.alm(nside=self.nside, backend=self.scat_op)
+        self.alm = hml_alm.alm(nside=self.nside, backend=self.scat_op)
         
         self.c_l1 = np.zeros([n_maps, 3, 3*self.nside])
         self.c_l2 = np.zeros([n_maps, 3, 3*self.nside])

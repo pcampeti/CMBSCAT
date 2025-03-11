@@ -2,5 +2,5 @@ numpy
 matplotlib
 healpy
 tensorflow
-foscat
+healpixml
 tqdm

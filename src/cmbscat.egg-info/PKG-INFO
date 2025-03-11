@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: cmbscat
-Version: 0.0.1
+Version: 0.0.3
 Summary: A package for scattering covariance synthesis on datasets of Healpix maps, based on the HealpixML package.
 Author-email: Paolo CAMPETI <paolo.campeti@fe.infn.it>, Jean-Marc DELOUIS <jean.marc.delouis@ifremer.fr>
 License: BSD 3-Clause License
@@ -43,7 +43,7 @@ Requires-Dist: numpy
 Requires-Dist: matplotlib
 Requires-Dist: healpy
 Requires-Dist: tensorflow
-Requires-Dist: foscat
+Requires-Dist: healpixml
 Requires-Dist: tqdm
 
 # Map-based emulator for CMB systematics with scattering covariances
