@@ -6,7 +6,7 @@
 `cmbscat` relies heavily on the [`HealpixML`](https://github.com/jmdelouis/HealpixML) library for efficient scattering covariance computation on the HEALPix sphere. 
 
 ## Install with pip
-You can install it simply doing:
+You can install it simply with:
 ```
 pip install cmbscat
 ```
@@ -42,7 +42,7 @@ pipeline.run()
 ## Tutorial Notebook
 You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb). 
 
-Specifically we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in [Campeti et al. 2025].
+Specifically, we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in [Campeti et al. 2025].
 
 
 ## Citations
