@@ -12,7 +12,7 @@ pip install cmbscat
 ```
 
 ## Usage
-You can then set generate a new dataset of CMB systematics maps by doing:
+You can generate a new dataset of CMB systematics maps by doing:
 
 ```python
 from cmbscat import cmbscat_pipe
