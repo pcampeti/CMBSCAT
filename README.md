@@ -44,7 +44,7 @@ pipeline.run()
 ## Tutorial Notebook
 You can find an introductory notebook explaining all features of the `cmbscat` package [here](https://github.com/pcampeti/CMBSCAT/blob/main/notebook/CMBSCAT_demo.ipynb). 
 
-Specifically, we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in the accompanying paper [**Campeti et al. 2025**](arxiv.org).
+Specifically, we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in the accompanying paper [arxiv/...](arxiv.org).
 
 <img width="1066" alt="image" src="https://github.com/user-attachments/assets/aa976368-5d3c-4879-a461-3d0cd120ba4a" />
 
