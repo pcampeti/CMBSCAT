@@ -10,6 +10,7 @@ You can install it simply with:
 ```
 pip install cmbscat
 ```
+We recommend using python 3.11.
 
 ## Usage
 You can generate a new dataset of CMB systematics maps by doing:
