@@ -13,6 +13,7 @@ pip install cmbscat
 We recommend using `python 3.11`.
 
 ## Usage
+
 You can generate a new dataset of CMB systematics maps by doing:
 
 ```python
@@ -45,6 +46,7 @@ You can find an introductory notebook explaining all features of the `cmbscat` p
 
 Specifically, we apply it to simulated maps of an example of CMB satellites instrumental systematics, as described in [Campeti et al. 2025].
 
+<img width="1066" alt="image" src="https://github.com/user-attachments/assets/aa976368-5d3c-4879-a461-3d0cd120ba4a" />
 
 ## Citations
 Should this code be used in any way, we kindly ask that the following article is cited:
