@@ -21,13 +21,13 @@ from cmbscat import cmbscat_pipe
 
 # Set emulator parameters
 params = {
-    'NNN'          : 10,             # Number of input reference maps
+    'NNN'          : 10,               # Number of input reference maps
     'gauss_real'   : True,             # Generate new input data as Gaussian realizations from pixel covariance of original data
     'NGEN'         : 10,               # Batch size for gradient descent
     'n_samples'    : 10,               # Samples in the input dataset
     'nside'        : 16,               # N_side of input maps
     'NORIENT'      : 4,                # Orientations in the SC
-    'nstep'        : 50,              # Steps in gradient descent
+    'nstep'        : 50,               # Steps in gradient descent
     'KERNELSZ'     : 3,                # Wavelet kernel size
     'outname'      : 'example',        # Output name
     'outpath'      : './data/',        # Output path
