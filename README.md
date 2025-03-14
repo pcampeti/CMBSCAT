@@ -14,7 +14,7 @@ We recommend using `python 3.11`.
 
 ## Usage
 
-You can generate a new dataset of CMB systematics maps by doing:
+You can generate a new dataset of CMB systematics maps by doing (assuming you run from inside the folder `/CMBSCAT/notebook/`):
 
 ```python
 from cmbscat import cmbscat_pipe
