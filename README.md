@@ -12,7 +12,7 @@ pip install cmbscat
 ```
 We recommend using `python 3.11`.
 
-You can also installing from source with:
+Alternatively, you can install from source with:
 ```
 git clone https://github.com/pcampeti/CMBSCAT.git
 cd CMBSCAT/
