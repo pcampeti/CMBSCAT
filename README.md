@@ -31,7 +31,7 @@ params = {
     'KERNELSZ'     : 3,                # Wavelet kernel size
     'outname'      : 'example',        # Output name
     'outpath'      : './data/',        # Output path
-    'data'         : 'variable_gain_sims.npy'  # Input data path
+    'data'         : 'variable_gain_sims.npy'  # Input data path (assuming you run from inside the /CMBSCAT/notebook/ folder)
 }
 
 # Initialize pipeline...
