@@ -12,6 +12,14 @@ pip install cmbscat
 ```
 We recommend using `python 3.11`.
 
+You can also installing from source with:
+```
+git clone https://github.com/pcampeti/CMBSCAT.git
+cd CMBSCAT/
+pip install -r requirements.txt
+pip install -e .
+```
+
 ## Usage
 
 You can generate a new dataset of CMB systematics maps by doing:
