@@ -60,13 +60,13 @@ Specifically, we apply it to simulated maps of an example of CMB satellites inst
 Should this code be used in any way, we kindly ask that the following article is cited:
 
 ```
-@article{campeti:systematics_emulator, 
-   author      = "Paolo Campeti, Jean-Marc Delouis, Luca Pagano, Erwan Allys, Massimiliano Lattanzi, Martina Gerbino",
-   title       = "From few to many maps: A fast map-level emulator for extreme augmentation of CMB systematics datasets",
-   eprint = "2503.11643",
-   archivePrefix = "arXiv",
-   primaryClass = "astro-ph.CO",
-   month = "Mar",
-   year = "2025"
+@article{Campeti:2025opc,
+    author = "Campeti, P. and Delouis, J. -M. and Pagano, L. and Allys, E. and Lattanzi, M. and Gerbino, M.",
+    title = "{From few to many maps: A fast map-level emulator for extreme augmentation of CMB systematics datasets}",
+    eprint = "2503.11643",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    month = "3",
+    year = "2025"
 }
 ```
