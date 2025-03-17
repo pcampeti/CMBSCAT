@@ -63,10 +63,10 @@ Should this code be used in any way, we kindly ask that the following article is
 @article{campeti:systematics_emulator, 
    author      = "Paolo Campeti, Jean-Marc Delouis, Luca Pagano, Erwan Allys, Massimiliano Lattanzi, Martina Gerbino",
    title       = "From few to many maps: A fast map-level emulator for extreme augmentation of CMB systematics datasets",
-   eprint = "",
+   eprint = "2503.11643",
    archivePrefix = "arXiv",
    primaryClass = "astro-ph.CO",
-   month = "",
+   month = "Mar",
    year = "2025"
 }
 ```
